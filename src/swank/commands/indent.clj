@@ -5,7 +5,7 @@
 
 (defn- need-full-indentation-update?
   "Return true if the indentation cache should be updated for all
-   namespaces. 
+   namespaces.
 
    This is a heuristic so as to avoid scanning all symbols from all
    namespaces. Instead, we only check whether the set of namespaces in
@@ -15,7 +15,7 @@
            (hash @(connection :indent-cache-pkg)))))
 
 (defn- find-args-body-position
-  "Given an arglist, return the number of arguments before 
+  "Given an arglist, return the number of arguments before
      [... & body]
    If no & body is found, nil will be returned"
   ([args]
@@ -41,16 +41,16 @@
            (find-arglists-body-position (:arglists var-meta))))))
 
 (defn- var-indent-representation
-  "Returns the slime indentation representation (name . position) for
-   a given var. If there is no indentation representation, nil is
-   returned."
+  "Returns the slime indentation representation (name position packages) for a
+   given var. If there is no indentation representation, nil is returned."
   ([var]
      (when-let [body-position (find-var-body-position var)]
        (when (or (= body-position 'defun)
                  (not (neg? body-position)))
          (list (name (:name (meta var)))
-               '.
-               body-position)))))
+               body-position
+               nil ;; Packages. TODO: enumerate all the packages the symbol is found in.
+               )))))
 
 (defn- get-cache-update-for-var
   "Checks whether a given var needs to be updated in a cache. If it
@@ -68,7 +68,7 @@
      (remove nil? (map (partial get-cache-update-for-var find-in-cache) (vals (ns-interns ns))))))
 
 (defn- update-indentation-delta
-  "Update the cache and return the changes in a (symbol '. indent) list.
+  "Update the cache and return the changes in a (symbol indent packages) list.
    If FORCE is true then check all symbols, otherwise only check
    symbols belonging to the buffer package"
   ([cache-ref load-all-ns?]
